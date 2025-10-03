@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SaaS Mentor de Aplicação da Fé</title>
+    <!-- Bootstrap CSS para Responsividade Móvel -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Fontes (Lora para títulos, Open Sans para corpo) -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&family=Open+Sans:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        /* Paleta: Lilás Suave, Dourado Claro, Fundo Calmo */
+        :root {
+            --cor-principal: #5e548e;
+            /* Deep Lilac/Indigo */
+            --cor-acento: #ffc107;
+            /* Gold/Amber */
+            --cor-fundo: #f7f9fc;
+            /* Soft Blue/Gray */
+            --cor-secundaria: #e1bee7;
+            /* Light Lilac */
+            --cor-texto: #333333;
+            --cor-reflexao: #f0f8ff;
+            /* Alice Blue - Suave para destaque */
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: var(--cor-fundo);
+            color: var(--cor-texto);
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        .section-title {
+            font-family: 'Lora', serif;
+            color: var(--cor-principal);
+            font-weight: 700;
+        }
+
+        .container {
+            max-width: 800px;
+        }
+
+        /* 1. Header */
+        .header-app {
+            background-color: var(--cor-principal);
+            color: white;
+            padding: 2.5rem 1rem;
+            border-radius: 0 0 2rem 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+            position: relative;
+            /* ESSENCIAL para posicionar o botão TOP-RIGHT */
+        }
+
+        .logo-placeholder {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-placeholder i {
+            color: var(--cor-acento);
+            /* Ícone dourado */
+            margin-right: 0.5rem;
+            font-size: 1.8rem;
+        }
+
+        /* NOVO ESTILO: Botão de Progresso no canto superior direito (discreto) */
+        .btn-progress-top {
+            position: absolute;
+            top: 1.2rem;
+            right: 1rem;
+            background-color: var(--cor-acento);
+            color: var(--cor-principal);
+            /* Texto em lilás profundo */
+            border: none;
+            font-weight: 600;
+            padding: 0.5rem 0.8rem;
+            /* Espaçamento interno generoso */
+            border-radius: 1rem;
+            /* Cantos arredondados */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease-in-out;
+            font-size: 0.85rem;
+            /* Discreto para não sobrecarregar */
+            text-decoration: none;
+            z-index: 10;
+            font-family: 'Open Sans', sans-serif;
+        }
+
+        .btn-progress-top:hover {
+            background-color: #fdd835;
+            transform: scale(1.05);
+            /* Efeito hover suave */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            color: var(--cor-principal);
+        }
+
+        /* FIM NOVO ESTILO TOP-RIGHT */
+
+        /* 2. Formulário e Cards */
+        .card-mentor {
+            border: none;
+            border-radius: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+            background-color: white;
+        }
+
+        .btn-generate {
+            background-color: var(--cor-acento);
+            border: none;
+            color: var(--cor-principal);
+            font-weight: 700;
+            padding: 0.75rem 1rem;
+            border-radius: 50px;
+            /* Cantos super arredondados */
+            transition: all 0.3s ease-out;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-generate:hover {
+            background-color: #fdd835;
+            /* Dourado um pouco mais escuro */
+            transform: translateY(-3px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+            color: var(--cor-principal);
+        }
+
+        /* Botão Acompanhamento (Centralizado Abaixo do Formulário) */
+        .btn-dashboard {
+            background-color: var(--cor-principal);
+            color: white;
+            border-radius: 50px;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            border: 2px solid var(--cor-principal);
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .btn-dashboard:hover {
+            background-color: #4a4072;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+
+
+        /* 3. Seção de Resultados (Hierarquia Visual) */
+        .section-title {
+            color: var(--cor-principal);
+            font-weight: 700;
+            border-bottom: 2px solid var(--cor-secundaria);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .result-card {
+            border-left: 8px solid var(--cor-principal);
+            /* Borda mais grossa */
+            transition: transform 0.2s;
+        }
+
+        .result-card:hover {
+            transform: translateY(-3px);
+        }
+
+        /* Versículo Bússola */
+        .versiculo-bussola {
+            background-color: var(--cor-reflexao);
+            /* Alice Blue - Suave para destaque */
+            border-radius: 1rem;
+            font-style: italic;
+            font-weight: 600;
+            line-height: 1.6;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Plano de Ação */
+        .plano-acao {
+            background-color: var(--cor-secundaria);
+            border: 1px solid #ce93d8;
+        }
+
+        .plano-acao li {
+            font-weight: 400;
+            font-size: 0.95rem;
+        }
+
+        .icon-check {
+            color: var(--cor-principal);
+            font-size: 1.1rem;
+            margin-right: 0.5rem;
+        }
+
+        .badge-theme {
+            background-color: #e3f2fd;
+            /* Azul Suave */
+            color: var(--cor-principal);
+            font-size: 0.9rem;
+            padding: .6em 1em;
+            border-radius: 50px;
+            font-weight: 600;
+        }
+
+        /* 4. Footer */
+        .app-footer {
+            border-top: 1px solid #e0e0e0;
+            background-color: white;
+            color: #777;
+            padding: 2rem 0 1rem;
+        }
+
+        .footer-link {
+            color: var(--cor-principal);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .footer-link:hover {
+            color: var(--cor-acento);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header-app text-center">
+        <!-- BOTÃO DE PROGRESSO NO CANTO SUPERIOR DIREITO -->
+        <a th:href="@{/dashboard}" class="btn-progress-top">
+            <i class="fas fa-chart-line me-1"></i> Progresso
+        </a>
+
+        <div class="logo-placeholder mb-2">
+            <i class="fa-solid fa-seedling"></i> SEMENTE
+        </div>
+        <h1 class="h3 fw-bold mb-0">Mentor de Aplicação da Fé</h1>
+        <p class="mb-0 fs-6 text-light opacity-75">Seu espaço de paz e ação. Conte com a Palavra para o seu dia.</p>
+    </div>
+
+    <div class="container pb-5">
+
+        <!-- Mensagens de Feedback (Sucesso/Erro) -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show card-mentor" role="alert">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show card-mentor" role="alert">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- 2. Formulário de Input -->
+        <div class="card card-mentor">
+            <div class="card-body">
+                <h3 class="h5 fw-bold text-center mb-4">✍️ Compartilhe Seu Desafio Hoje</h3>
+                <form th:action="@{/generate}" method="post">
+                    <div class="mb-4">
+                        <label for="userChallenge" class="form-label fw-semibold">Qual emoção, problema ou desafio está
+                            pesando em seu coração?</label>
+                        <textarea class="form-control" id="userChallenge" name="userChallenge" rows="5"
+                            placeholder="Ex: Sinto-me sobrecarregado(a) pelas responsabilidades do trabalho e estou perdendo a paciência com a minha família..."
+                            required></textarea>
+                        <div class="form-text mt-2">Sua honestidade aqui garante a melhor resposta do Mentor Premium.
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-generate">
+                            ✨ Receber Mentoria e Plano de Ação (IA Premium)
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Botão Acompanhamento (Centralizado Abaixo do Formulário) -->
+        <div class="text-center mb-5">
+            <a th:href="@{/dashboard}" class="btn-dashboard">
+                <i class="fa-solid fa-seedling me-2"></i> Meu Mapa de Crescimento
+            </a>
+        </div>
+
+        <hr class="my-5 opacity-25">
+
+        <!-- 3. Lista de Aplicações Geradas -->
+        <h2 class="h4 fw-bold text-center mb-5">Diário de Aplicações (Seu Histórico de Crescimento)</h2>
+
+        <div th:if="${#lists.isEmpty(applications)}" class="text-center p-4 text-muted">
+            <p class="mb-0">Ainda não há registros. Comece a semear a Palavra em sua vida!</p>
+        </div>
+
+        <div th:each="app : ${applications}" class="card card-mentor result-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h5 class="card-title fw-bold">Aplicação #<span th:text="${app.id}"></span></h5>
+                    <span class="badge bg-secondary p-2 rounded-pill"
+                        th:text="${#temporals.format(app.createdAt, 'dd/MM HH:mm')}"></span>
+                </div>
+
+                <h6 class="fw-semibold text-muted mb-2">Seu Desafio:</h6>
+                <p class="card-text border-start border-3 border-secondary-subtle ps-3 pb-2"
+                    th:text="${app.userChallenge}"></p>
+
+                <!-- Tema Identificado pela IA -->
+                <div class="mb-4">
+                    <p class="section-title text-dark"><i class="fa-solid fa-tag"></i> Temas Identificados (IA)</p>
+                    <span class="badge badge-theme" th:text="${app.identifiedTheme}"></span>
+                </div>
+
+                <!-- 1. O Versículo-Bússola -->
+                <div class="mb-4 p-4 versiculo-bussola">
+                    <p class="section-title text-center mb-3">1. O Versículo-Bússola (Seu Foco)</p>
+                    <p class="card-text fs-5 text-center text-dark" th:text="${app.versiculoBussola}"></p>
+                </div>
+
+                <!-- 2. A Reflexão Aplicada -->
+                <div class="mb-4">
+                    <p class="section-title"><i class="fa-solid fa-lightbulb"></i> A Reflexão Aplicada</p>
+                    <p class="card-text" th:text="${app.reflexaoAplicada}"></p>
+                </div>
+
+                <!-- 3. Plano de Ação (3-5 Passos de Accountability) -->
+                <div class="mb-4 p-4 rounded-3 plano-acao">
+                    <p class="section-title text-dark"><i class="fa-solid fa-list-check"></i> 4. Plano de Ação (3 a 5
+                        Passos Práticos)</p>
+                    <ul class="list-unstyled mb-0">
+                        <!-- Divide a string de Plano de Ação por quebras de linha para criar itens de lista -->
+                        <li th:each="passo : ${#strings.arraySplit(app.planoDeAcao, '\n')}"
+                            class="d-flex align-items-start mb-2">
+                            <i class="fa-solid fa-check icon-check"></i>
+                            <span th:text="${#strings.substringAfter(passo, '- ')}" class="fw-medium"></span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 4. Referências Cruzadas Contextuais -->
+                <div class="mb-4">
+                    <p class="section-title"><i class="fa-solid fa-book-open"></i> 2. Referências Cruzadas Contextuais
+                    </p>
+                    <p class="card-text text-muted small" th:text="${app.referenciasCruzadas}"></p>
+                    <div class="form-text">Passagens para contextualizar e aprofundar sua leitura.</div>
+                </div>
+
+                <!-- 5. Oração-Semente -->
+                <div class="mb-0 p-3 rounded-3" style="background-color: #f3e5f5;">
+                    <p class="section-title mb-2"><i class="fa-solid fa-hands-praying"></i> 5. Oração-Semente</p>
+                    <p class="card-text fst-italic" th:text="${app.oracaoSemente}"></p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 4. Rodapé com Links Úteis -->
+    <footer class="app-footer text-center">
+        <div class="container">
+            <p class="mb-3 small">© <span th:text="${#dates.year(#dates.createNow())}">2024</span> Semente - Mentor de
+                Aplicação da Fé.</p>
+            <div class="mb-3">
+                <a href="#" class="footer-link mx-2 small">Sobre</a>
+                |
+                <a href="#" class="footer-link mx-2 small">Contato</a>
+                |
+                <a href="#" class="footer-link mx-2 small">Política de Privacidade</a>
+            </div>
+            <p class="small text-muted fst-italic">Criado para inspirar reflexão e ação diária.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

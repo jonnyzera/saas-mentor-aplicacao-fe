@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Semente - Todos os Registros</title>
+    <!-- Bootstrap CSS para Responsividade Móvel -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Fontes (Lora para títulos, Open Sans para corpo) -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&family=Open+Sans:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        /* Paleta: Lilás Suave, Dourado Claro, Fundo Calmo */
+        :root {
+            --cor-principal: #5e548e;
+            /* Deep Lilac/Indigo */
+            --cor-acento: #ffc107;
+            /* Gold/Amber */
+            --cor-fundo: #f7f9fc;
+            /* Soft Blue/Gray */
+            --cor-secundaria: #e1bee7;
+            /* Light Lilac */
+            --cor-texto: #333333;
+            --cor-reflexao: #f0f8ff;
+            /* Alice Blue - Suave para destaque */
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: var(--cor-fundo);
+            color: var(--cor-texto);
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        .section-title {
+            font-family: 'Lora', serif;
+            color: var(--cor-principal);
+            font-weight: 700;
+        }
+
+        .container {
+            max-width: 800px;
+        }
+
+        /* 1. Header e Logo 'SEMENTE' */
+        .header-app {
+            background-color: var(--cor-principal);
+            color: white;
+            padding: 2.5rem 1rem;
+            border-radius: 0 0 2rem 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .logo-placeholder {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-placeholder i {
+            color: var(--cor-acento);
+            /* Ícone dourado */
+            margin-right: 0.5rem;
+            font-size: 1.8rem;
+        }
+
+        /* 2. Lista de Registros */
+        .card-mentor {
+            border: none;
+            border-radius: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+            background-color: white;
+        }
+
+        .result-card {
+            border-left: 8px solid var(--cor-principal);
+            /* Borda mais grossa */
+            transition: transform 0.2s;
+        }
+
+        .result-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .badge-theme {
+            background-color: #e3f2fd;
+            /* Azul Suave */
+            color: var(--cor-principal);
+            font-size: 0.9rem;
+            padding: .6em 1em;
+            border-radius: 50px;
+            font-weight: 600;
+        }
+
+        /* Botão Voltar/Visualizar */
+        .btn-action {
+            background-color: var(--cor-principal);
+            color: white;
+            border-radius: 50px;
+            padding: 0.5rem 1.25rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            border: none;
+        }
+
+        .btn-action:hover {
+            background-color: #4a4072;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+
+        /* 4. Footer */
+        .app-footer {
+            border-top: 1px solid #e0e0e0;
+            background-color: white;
+            color: #777;
+            padding: 2rem 0 1rem;
+        }
+
+        .footer-link {
+            color: var(--cor-principal);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .footer-link:hover {
+            color: var(--cor-acento);
+        }
+
+        /* Estilos específicos para o card de lista */
+        .list-header {
+            background-color: var(--cor-secundaria);
+            border-radius: 1rem 1rem 0 0;
+            padding: 1rem 1.5rem;
+        }
+
+        .list-item-content {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 80%;
+            /* Limita o desafio para caber o botão */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header-app text-center">
+        <!-- LOGOTIPO SEMENTE -->
+        <div class="logo-placeholder mb-2">
+            <i class="fa-solid fa-seedling"></i> SEMENTE
+        </div>
+        <h1 class="h3 fw-bold mb-0">Arquivo de Registros</h1>
+        <p class="mb-0 fs-6 text-light opacity-75">Sua jornada completa, do início ao fim.</p>
+    </div>
+
+    <div class="container pb-5">
+
+        <div class="text-center mb-4 mt-3">
+            <a th:href="@{/dashboard}" class="btn-action">
+                <i class="fa-solid fa-arrow-left me-2"></i> Voltar para o Dashboard
+            </a>
+        </div>
+
+        <!-- Mensagens de Feedback (Sucesso/Erro) -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show card-mentor" role="alert">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show card-mentor" role="alert">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <h2 class="h4 fw-bold text-center mb-4 mt-4">Lista Completa de Aplicações</h2>
+
+        <div th:if="${#lists.isEmpty(applications)}" class="text-center p-4 text-muted">
+            <p class="mb-0">Não há registros salvos para análise.</p>
+        </div>
+
+        <!-- LISTA DE TODOS OS REGISTROS -->
+        <div th:unless="${#lists.isEmpty(applications)}" class="card card-mentor p-0">
+            <div class="list-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold text-white">Desafio</h5>
+                <small class="text-white">Data</small>
+            </div>
+
+            <ul class="list-group list-group-flush">
+                <li th:each="app : ${applications}"
+                    class="list-group-item d-flex justify-content-between align-items-center p-3">
+                    <div class="flex-grow-1 me-3">
+                        <!-- ID e Desafio (Truncado) -->
+                        <div class="d-flex align-items-center mb-1">
+                            <span class="badge bg-light text-primary-emphasis me-2" th:text="${app.id}"></span>
+                            <span class="fw-semibold list-item-content" th:text="${app.userChallenge}"></span>
+                        </div>
+                        <!-- Temas -->
+                        <div class="d-flex flex-wrap">
+                            <span th:each="theme : ${#strings.arraySplit(app.identifiedTheme, ',')}"
+                                class="badge badge-theme me-1 mb-1 small" th:text="${#strings.trim(theme)}">
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-column align-items-end">
+                        <small class="text-muted mb-2"
+                            th:text="${#temporals.format(app.createdAt, 'dd/MM/yy HH:mm')}"></small>
+                        <!-- Botão de Exclusão (Abre o Modal de Confirmação) -->
+                        <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                            data-bs-target="#deleteConfirmationModal" th:data-app-id="${app.id}"
+                            title="Excluir Permanentemente">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+
+    <!-- 4. Rodapé -->
+    <footer class="app-footer text-center">
+        <div class="container">
+            <p class="mb-3 small">© <span th:text="${#dates.year(#dates.createNow())}">2024</span> Semente - Mentor de
+                Aplicação da Fé.</p>
+            <div class="mb-3">
+                <a href="#" class="footer-link mx-2 small">Sobre</a>
+                |
+                <a href="#" class="footer-link mx-2 small">Contato</a>
+                |
+                <a href="#" class="footer-link mx-2 small">Política de Privacidade</a>
+            </div>
+            <p class="small text-muted fst-italic">Criado para inspirar reflexão e ação diária.</p>
+        </div>
+    </footer>
+
+    <!-- MODAL DE CONFIRMAÇÃO DE EXCLUSÃO (UX/UI: Segundo Alerta) -->
+    <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteConfirmationModalLabel"><i
+                            class="fas fa-exclamation-triangle me-2"></i> Confirmação Necessária</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <p class="mb-3">Você tem certeza que deseja excluir este registro?</p>
+                    <p class="text-danger small">Esta ação não pode ser desfeita e irá afetar seu Mapa de Crescimento.
+                    </p>
+
+                    <!-- Formulário real de exclusão que será preenchido pelo JS -->
+                    <form id="deleteForm" method="post" action="/delete/0">
+                        <input type="hidden" name="_method" value="delete" />
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger fw-bold">Sim, Excluir Definitivamente</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        // Lógica para injetar o ID do registro no Modal de Confirmação
+        document.addEventListener('DOMContentLoaded', function () {
+            const deleteConfirmationModal = document.getElementById('deleteConfirmationModal');
+            const deleteForm = document.getElementById('deleteForm');
+
+            // Certifica-se de que o Modal de Confirmação lida com cliques de qualquer botão de lixeira
+            deleteConfirmationModal.addEventListener('show.bs.modal', function (event) {
+                // Pega o botão que acionou o modal
+                const button = event.relatedTarget;
+
+                // Pega o ID do registro
+                const appId = button.getAttribute('data-app-id');
+
+                // Atualiza a URL do formulário de exclusão
+                deleteForm.action = /*[[@{/delete/}]]*/ '/delete/' + appId;
+            });
+        });
+        /*]]>*/
+    </script>
+</body>
+
+</html>
