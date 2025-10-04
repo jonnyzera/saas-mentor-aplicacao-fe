@@ -342,11 +342,11 @@
                     <p class="section-title text-dark"><i class="fa-solid fa-list-check"></i> 4. Plano de Ação (3 a 5
                         Passos Práticos)</p>
                     <ul class="list-unstyled mb-0">
-                        <!-- Divide a string de Plano de Ação por quebras de linha para criar itens de lista -->
                         <li th:each="passo : ${#strings.arraySplit(app.planoDeAcao, '\n')}"
-                            class="d-flex align-items-start mb-2">
+                            th:if="${not #strings.isEmpty(#strings.trim(passo))}" class="d-flex align-items-start mb-2">
                             <i class="fa-solid fa-check icon-check"></i>
-                            <span th:text="${#strings.substringAfter(passo, '- ')}" class="fw-medium"></span>
+                            <div th:text="${#strings.trim(#strings.substringAfter(passo, '- '))}"
+                                class="fw-medium flex-grow-1"></div>
                         </li>
                     </ul>
                 </div>
