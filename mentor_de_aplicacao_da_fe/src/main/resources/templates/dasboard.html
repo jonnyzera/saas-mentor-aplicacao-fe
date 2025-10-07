@@ -257,12 +257,15 @@
                 <div class="calendar-header">SEX</div>
                 <div class="calendar-header">SÁB</div>
 
-                <!-- Preenche 30 dias. registrationDates deve ser uma lista de números de dia (1 a 31) -->
+                <!-- O loop foi corrigido para usar apenas th:if para o registro dinâmico -->
                 <th:block th:each="day : ${#numbers.sequence(1, 30)}">
-                    <!-- Adiciona o atributo data-day e a função onclick para dias registrados -->
-                    <div th:classappend="${#lists.contains(registrationDates, __${day}__)} ? 'day-registered'"
-                        th:attrappend="${#lists.contains(registrationDates, __${day}__)} ? ' data-bs-toggle=modal data-bs-target=#dailyDetailModal onclick=showDailyRecords(' + ${day} + ')'"
-                        th:data-day="${day}" class="calendar-day" th:text="${day}">
+                    <div th:with="isRegistered=${#lists.contains(registrationDates, day)}">
+                        <div th:classappend="${isRegistered} ? 'day-registered'" th:data-day="${day}"
+                            th:data-bs-toggle="${isRegistered} ? 'modal'"
+                            th:data-bs-target="${isRegistered} ? '#dailyDetailModal'"
+                            th:onclick="${isRegistered} ? 'showDailyRecords(' + ${day} + ')'" class="calendar-day"
+                            th:text="${day}">
+                        </div>
                     </div>
                 </th:block>
             </div>

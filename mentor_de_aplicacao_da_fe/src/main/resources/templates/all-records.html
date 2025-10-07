@@ -153,12 +153,65 @@
             padding: 1rem 1.5rem;
         }
 
+        /* CORREÇÃO CHAVE: Garante que o texto longo seja truncado com reticências */
         .list-item-content {
+            /* Força o texto a ficar em uma linha */
             white-space: nowrap;
+            /* Esconde o que excede */
             overflow: hidden;
+            /* Adiciona os três pontos */
             text-overflow: ellipsis;
-            max-width: 80%;
-            /* Limita o desafio para caber o botão */
+            /* CRUCIAL: Garante que o elemento não force a expansão no flexbox */
+            min-width: 0;
+            display: block;
+            flex-grow: 1;
+        }
+
+        /* NOVO ESTILO: Área clicável e hover para o item da lista */
+        .record-clickable-area {
+            cursor: pointer;
+            /* min-width: 0 é a chave para forçar a quebra no flexbox */
+            min-width: 0;
+            flex-grow: 1;
+            padding-right: 0;
+            transition: background-color 0.15s;
+            border-radius: 0.5rem;
+        }
+
+        .record-clickable-area:hover {
+            background-color: var(--cor-reflexao);
+        }
+
+        /* Estilos para o Modal de Detalhes (consistência com index.html) */
+        .versiculo-bussola {
+            background-color: var(--cor-reflexao);
+            /* Alice Blue - Suave para destaque */
+            border-radius: 1rem;
+            font-style: italic;
+            font-weight: 600;
+            line-height: 1.6;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .plano-acao {
+            background-color: var(--cor-secundaria);
+            border: 1px solid #ce93d8;
+        }
+
+        .icon-check {
+            color: var(--cor-principal);
+            font-size: 1.1rem;
+            margin-right: 0.5rem;
+        }
+
+        /* NOVO AJUSTE: Garante que o texto do desafio não exceda o espaço definido */
+        /* Alvo o contêiner do desafio e ID dentro da área clicável */
+        .record-clickable-area>div {
+            max-width: 100%;
+            min-width: 0;
+            /* Reforça a quebra */
         }
     </style>
 </head>
@@ -206,22 +259,35 @@
 
             <ul class="list-group list-group-flush">
                 <li th:each="app : ${applications}"
-                    class="list-group-item d-flex justify-content-between align-items-center p-3">
-                    <div class="flex-grow-1 me-3">
-                        <!-- ID e Desafio (Truncado) -->
-                        <div class="d-flex align-items-center mb-1">
-                            <span class="badge bg-light text-primary-emphasis me-2" th:text="${app.id}"></span>
-                            <span class="fw-semibold list-item-content" th:text="${app.userChallenge}"></span>
-                        </div>
-                        <!-- Temas -->
-                        <div class="d-flex flex-wrap">
-                            <span th:each="theme : ${#strings.arraySplit(app.identifiedTheme, ',')}"
-                                class="badge badge-theme me-1 mb-1 small" th:text="${#strings.trim(theme)}">
-                            </span>
+                    class="list-group-item d-flex justify-content-between align-items-start p-3">
+
+                    <!-- ÁREA CLICÁVEL PARA ABRIR O MODAL DE DETALHES -->
+                    <!-- min-w-0 e flex-grow-1 aqui fazem com que esta área use todo o espaço disponível -->
+                    <div class="record-clickable-area d-flex align-items-center min-w-0 flex-grow-1"
+                        th:data-app-id="${app.id}" onclick="showRecordDetail(this.getAttribute('data-app-id'))">
+
+                        <!-- Contêiner vertical de conteúdo (Desafio e Temas) -->
+                        <div class="d-flex flex-column min-w-0 flex-grow-1">
+
+                            <!-- Linha do ID e Desafio (Truncado) -->
+                            <!-- O contêiner de texto (list-item-content) agora tem min-width: 0 e flex-grow-1 -->
+                            <div class="d-flex align-items-center mb-1 min-w-0 flex-grow-1">
+                                <span class="badge bg-light text-primary-emphasis me-2 flex-shrink-0"
+                                    th:text="${app.id}"></span>
+                                <span class="fw-semibold list-item-content" th:text="${app.userChallenge}"></span>
+                            </div>
+                            <!-- Temas -->
+                            <div class="d-flex flex-wrap mt-1">
+                                <span th:each="theme : ${#strings.arraySplit(app.identifiedTheme, ',')}"
+                                    class="badge badge-theme me-1 mb-1 small" th:text="${#strings.trim(theme)}">
+                                </span>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="d-flex flex-column align-items-end">
+                    <!-- BOTÃO DE EXCLUSÃO (Fixo à Direita) -->
+                    <!-- flex-shrink-0 aqui garante que este bloco NÃO ENCOLHA e defina a borda direita -->
+                    <div class="d-flex flex-column align-items-end ms-3 flex-shrink-0">
                         <small class="text-muted mb-2"
                             th:text="${#temporals.format(app.createdAt, 'dd/MM/yy HH:mm')}"></small>
                         <!-- Botão de Exclusão (Abre o Modal de Confirmação) -->
@@ -253,7 +319,77 @@
         </div>
     </footer>
 
-    <!-- MODAL DE CONFIRMAÇÃO DE EXCLUSÃO (UX/UI: Segundo Alerta) -->
+    <!-- MODAL 3: Detalhe do Registro (Exibe o prompt e a mentoria completa) -->
+    <div class="modal fade" id="recordDetailModal" tabindex="-1" aria-labelledby="recordDetailModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: var(--cor-principal); color: white;">
+                    <h5 class="modal-title" id="recordDetailModalLabel">Mentoria Completa #<span
+                            id="detailAppId"></span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-muted mb-2"><i class="fa-solid fa-user-circle me-2"></i> Seu Desafio
+                            Original</h6>
+                        <p id="detailUserChallenge"
+                            class="alert alert-secondary border-start border-5 border-secondary ps-3"
+                            style="white-space: pre-wrap;"></p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-dark"><i class="fa-solid fa-tag me-2"></i> Tema Identificado</h6>
+                        <span id="detailIdentifiedTheme"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-dark"><i class="fa-solid fa-compass me-2"></i> 1. O Versículo-Bússola
+                        </h6>
+                        <p id="detailVersiculoBussola" class="p-3 rounded-3 versiculo-bussola"></p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-dark"><i class="fa-solid fa-lightbulb me-2"></i> 3. A Reflexão Aplicada
+                        </h6>
+                        <p id="detailReflexaoAplicada" class="card-text"></p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-dark"><i class="fa-solid fa-list-check me-2"></i> 4. Plano de Ação
+                            (Passos)</h6>
+                        <div id="detailPlanoDeAcao" class="p-4 rounded-3 plano-acao">
+                            <!-- Lista de Ação vai aqui -->
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-dark"><i class="fa-solid fa-book-open me-2"></i> 2. Referências Cruzadas
+                        </h6>
+                        <p id="detailReferenciasCruzadas" class="card-text small text-muted"></p>
+                    </div>
+
+                    <div class="mb-0 p-3 rounded-3" style="background-color: #f3e5f5;">
+                        <h6 class="fw-bold text-dark mb-2"><i class="fa-solid fa-hands-praying me-2"></i> 5.
+                            Oração-Semente</h6>
+                        <p id="detailOracaoSemente" class="card-text fst-italic"></p>
+                    </div>
+
+                    <div class="mt-4 text-end">
+                        <small class="text-muted">Registrado em: <span id="detailCreatedAt"></span></small>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar Detalhes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- MODAL DE CONFIRMAÇÃO DE EXCLUSÃO (UX/UI: Segundo Alerta) - Mantido no final do body -->
     <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-sm">
@@ -288,7 +424,78 @@
 
     <script th:inline="javascript">
         /*<![CDATA[*/
-        // Lógica para injetar o ID do registro no Modal de Confirmação
+        // Mapeia todos os registros do Thymeleaf para um objeto JavaScript para consulta rápida (O(1)).
+        const allApplications = {};
+        /*[# th:each="app : ${applications}"]*/
+        allApplications[/*[[${app.id}]]*/ 0] = {
+            id: /*[[${app.id}]]*/ 0,
+            userChallenge: /*[[${app.userChallenge}]]*/ 'Desafio Mock',
+            identifiedTheme: /*[[${app.identifiedTheme}]]*/ 'Tema Mock',
+            versiculoBussola: /*[[${app.versiculoBussola}]]*/ 'Versiculo Mock',
+            reflexaoAplicada: /*[[${app.reflexaoAplicada}]]*/ 'Reflexao Mock',
+            planoDeAcao: /*[[${app.planoDeAcao}]]*/ 'Plano Mock',
+            referenciasCruzadas: /*[[${app.referenciasCruzadas}]]*/ 'Referencias Mock',
+            oracaoSemente: /*[[${app.oracaoSemente}]]*/ 'Oracao Mock',
+            createdAt: /*[[${#temporals.format(app.createdAt, 'dd/MM/yyyy HH:mm')}]]*/ '01/01/2024 00:00'
+        };
+        /*[/#]*/
+
+
+        /**
+         * Abre o Modal de Detalhes do Registro, preenchendo todos os campos da mentoria.
+         * @param {string} appId - O ID do registro a ser exibido.
+         */
+        function showRecordDetail(appId) {
+            const app = allApplications[appId];
+
+            if (!app) {
+                console.error("Registro não encontrado para o ID:", appId);
+                return;
+            }
+
+            // Preenche os campos de texto do Modal
+            document.getElementById('detailAppId').textContent = app.id;
+            document.getElementById('detailUserChallenge').textContent = app.userChallenge;
+            document.getElementById('detailVersiculoBussola').textContent = app.versiculoBussola;
+
+            // Tratamento de quebra de linha para a Reflexão Aplicada
+            // Nota: Este tratamento (replace) deve ter sido feito no Controller para ser 100% Thymeleaf-friendly
+            document.getElementById('detailReflexaoAplicada').innerHTML = app.reflexaoAplicada.replace(/\n/g, '<br>');
+
+            document.getElementById('detailReferenciasCruzadas').textContent = app.referenciasCruzadas;
+            document.getElementById('detailOracaoSemente').textContent = app.oracaoSemente;
+            document.getElementById('detailCreatedAt').textContent = app.createdAt;
+
+            // Formata o Tema em Badges HTML
+            document.getElementById('detailIdentifiedTheme').innerHTML = app.identifiedTheme.split(',').map(t => `<span class="badge badge-theme me-1">${t.trim()}</span>`).join('');
+
+
+            // Formata o Plano de Ação em lista HTML
+            const planoListContainer = document.getElementById('detailPlanoDeAcao');
+            const passos = app.planoDeAcao ? app.planoDeAcao.split('\n') : [];
+            let htmlContent = '<ul class="list-unstyled mb-0">';
+            const iconCheck = '<i class="fa-solid fa-check icon-check"></i>';
+
+            passos.forEach(passo => {
+                const trimmedPasso = passo.trim();
+                // Garante que o passo não está vazio e não é apenas um marcador
+                if (trimmedPasso && trimmedPasso.length > 3) {
+                    // Remove o prefixo opcional de lista ('- ', '1. ', etc.) se existir
+                    const cleanPasso = trimmedPasso.replace(/^[-*]?\s*\d*\.?\s*/, '');
+                    htmlContent += `<li class="d-flex align-items-start mb-2"><span class="me-2">${iconCheck}</span><div class="fw-medium flex-grow-1" style="word-wrap: break-word;">${cleanPasso}</div></li>`;
+                }
+            });
+
+            htmlContent += '</ul>';
+            planoListContainer.innerHTML = htmlContent;
+
+            // Abre o modal
+            const detailModal = new bootstrap.Modal(document.getElementById('recordDetailModal'));
+            detailModal.show();
+        }
+
+
+        // Lógica para injetar o ID do registro no Modal de Confirmação (Mantida a exclusão)
         document.addEventListener('DOMContentLoaded', function () {
             const deleteConfirmationModal = document.getElementById('deleteConfirmationModal');
             const deleteForm = document.getElementById('deleteForm');

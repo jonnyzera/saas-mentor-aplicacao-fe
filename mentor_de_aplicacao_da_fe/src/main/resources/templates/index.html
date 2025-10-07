@@ -122,6 +122,46 @@
             background-color: white;
         }
 
+        /* ESTILO DOS ALERTS (FEEDBACKS) */
+        .alert-custom {
+            border-radius: 1.5rem;
+            /* Mesma borda dos cards */
+            margin-bottom: 2rem;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            font-weight: 600;
+            border: none;
+            /* Remove a borda padrão do alert */
+            display: flex;
+            align-items: center;
+        }
+
+        .alert-custom .btn-close {
+            margin-left: auto;
+            /* Empurra o botão de fechar para a direita */
+            filter: invert(1);
+            /* Deixa o X branco ou na cor de contraste */
+            opacity: 0.8;
+        }
+
+        .alert-success-custom {
+            background-color: #d4edda;
+            /* Verde suave do Bootstrap */
+            color: #155724;
+            /* Texto escuro */
+            border-left: 6px solid #28a745;
+            /* Linha verde de sucesso */
+        }
+
+        .alert-danger-custom {
+            background-color: #f8d7da;
+            /* Vermelho suave do Bootstrap */
+            color: #721c24;
+            /* Texto escuro */
+            border-left: 6px solid #dc3545;
+            /* Linha vermelha de erro */
+        }
+
         .btn-generate {
             background-color: var(--cor-acento);
             border: none;
@@ -164,6 +204,7 @@
 
         /* 3. Seção de Resultados (Hierarquia Visual) */
         .section-title {
+            font-family: 'Lora', serif;
             color: var(--cor-principal);
             font-weight: 700;
             border-bottom: 2px solid var(--cor-secundaria);
@@ -202,12 +243,31 @@
         .plano-acao li {
             font-weight: 400;
             font-size: 0.95rem;
+            /* GARANTE QUE O TEXTO QUEBRE DENTRO DO LI */
+            word-wrap: break-word;
+        }
+
+        /* Ajuste do Flexbox para o item da lista (li) */
+        .plano-acao .d-flex {
+            align-items: flex-start !important;
+            /* Alinha o ícone e o texto no topo */
+            /* word-wrap: break-word; Não é necessário aqui, mas manteremos no li para redundância */
+        }
+
+        /* Garante que o texto dentro do <div> da lista use o espaço e quebre */
+        .plano-acao .flex-grow-1 {
+            min-width: 0;
+            /* Essencial em flexbox para permitir quebra de linha em textos longos */
         }
 
         .icon-check {
             color: var(--cor-principal);
             font-size: 1.1rem;
             margin-right: 0.5rem;
+            margin-top: 2px;
+            /* Pequeno ajuste visual para alinhar o check com o texto */
+            flex-shrink: 0;
+            /* Impede que o ícone diminua */
         }
 
         .badge-theme {
@@ -238,6 +298,13 @@
         .footer-link:hover {
             color: var(--cor-acento);
         }
+
+        /* NOVO ESTILO: Cabeçalho do Modal de Confirmação */
+        .modal-header-confirmation {
+            background-color: var(--cor-principal);
+            color: white;
+            border-bottom: 1px solid var(--cor-principal);
+        }
     </style>
 </head>
 
@@ -257,12 +324,14 @@
 
     <div class="container pb-5">
 
-        <!-- Mensagens de Feedback (Sucesso/Erro) -->
-        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show card-mentor" role="alert">
+        <!-- Mensagens de Feedback (Sucesso/Erro) - AGORA COM NOVO ESTILO CUSTOMIZADO -->
+        <div th:if="${successMessage}" class="alert alert-success-custom alert-custom fade show" role="alert">
+            <i class="fas fa-check-circle me-3"></i>
             <span th:text="${successMessage}"></span>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show card-mentor" role="alert">
+        <div th:if="${errorMessage}" class="alert alert-danger-custom alert-custom fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-3"></i>
             <span th:text="${errorMessage}"></span>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
@@ -311,13 +380,22 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start mb-3">
                     <h5 class="card-title fw-bold">Aplicação #<span th:text="${app.id}"></span></h5>
-                    <span class="badge bg-secondary p-2 rounded-pill"
-                        th:text="${#temporals.format(app.createdAt, 'dd/MM HH:mm')}"></span>
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-secondary p-2 rounded-pill me-2"
+                            th:text="${#temporals.format(app.createdAt, 'dd/MM HH:mm')}"></span>
+                        <!-- Botão de Exclusão (Abre o Modal de Confirmação) -->
+                        <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                            data-bs-target="#deleteConfirmationModal" th:data-app-id="${app.id}"
+                            title="Excluir Permanentemente">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <h6 class="fw-semibold text-muted mb-2">Seu Desafio:</h6>
+                <!-- FIX: Adicionando quebras de linha para formatar o texto do desafio, caso venha com \n -->
                 <p class="card-text border-start border-3 border-secondary-subtle ps-3 pb-2"
-                    th:text="${app.userChallenge}"></p>
+                    th:utext="${#strings.replace(app.userChallenge, '\n', '&lt;br/&gt;')}"></p>
 
                 <!-- Tema Identificado pela IA -->
                 <div class="mb-4">
@@ -331,10 +409,11 @@
                     <p class="card-text fs-5 text-center text-dark" th:text="${app.versiculoBussola}"></p>
                 </div>
 
-                <!-- 2. A Reflexão Aplicada -->
+                <!-- 2. A Reflexão Aplicada (Agora com quebras de linha e tom de conselho) -->
                 <div class="mb-4">
                     <p class="section-title"><i class="fa-solid fa-lightbulb"></i> A Reflexão Aplicada</p>
-                    <p class="card-text" th:text="${app.reflexaoAplicada}"></p>
+                    <!-- FIX: Usando th:utext para renderizar quebras de linha como HTML <br> -->
+                    <p class="card-text" th:utext="${#strings.replace(app.reflexaoAplicada, '\n', '&lt;br/&gt;')}"></p>
                 </div>
 
                 <!-- 3. Plano de Ação (3-5 Passos de Accountability) -->
@@ -342,27 +421,39 @@
                     <p class="section-title text-dark"><i class="fa-solid fa-list-check"></i> 4. Plano de Ação (3 a 5
                         Passos Práticos)</p>
                     <ul class="list-unstyled mb-0">
+                        <!-- FIX: Adicionando verificação robusta para ignorar passos vazios ou só com traço -->
                         <li th:each="passo : ${#strings.arraySplit(app.planoDeAcao, '\n')}"
-                            th:if="${not #strings.isEmpty(#strings.trim(passo))}" class="d-flex align-items-start mb-2">
+                            th:if="${#strings.contains(passo, '- ') and not #strings.isEmpty(#strings.trim(passo))}"
+                            class="d-flex align-items-start mb-2">
                             <i class="fa-solid fa-check icon-check"></i>
+                            <!-- Remove o '- ' inicial antes de exibir -->
                             <div th:text="${#strings.trim(#strings.substringAfter(passo, '- '))}"
                                 class="fw-medium flex-grow-1"></div>
                         </li>
                     </ul>
+                    <!-- Adiciona uma mensagem se o plano de ação estiver vazio após a filtragem -->
+                    <p th:if="${#strings.isEmpty(app.planoDeAcao) or #lists.size(#strings.arraySplit(app.planoDeAcao, '\n')) == 0}"
+                        class="text-muted small mb-0 fst-italic">
+                        Nenhum passo de ação encontrado.
+                    </p>
                 </div>
 
                 <!-- 4. Referências Cruzadas Contextuais -->
                 <div class="mb-4">
                     <p class="section-title"><i class="fa-solid fa-book-open"></i> 2. Referências Cruzadas Contextuais
                     </p>
-                    <p class="card-text text-muted small" th:text="${app.referenciasCruzadas}"></p>
+                    <!-- FIX: Adicionando quebras de linha também aqui -->
+                    <p class="card-text text-muted small"
+                        th:utext="${#strings.replace(app.referenciasCruzadas, '\n', '&lt;br/&gt;')}"></p>
                     <div class="form-text">Passagens para contextualizar e aprofundar sua leitura.</div>
                 </div>
 
                 <!-- 5. Oração-Semente -->
                 <div class="mb-0 p-3 rounded-3" style="background-color: #f3e5f5;">
                     <p class="section-title mb-2"><i class="fa-solid fa-hands-praying"></i> 5. Oração-Semente</p>
-                    <p class="card-text fst-italic" th:text="${app.oracaoSemente}"></p>
+                    <!-- FIX: Adicionando quebras de linha aqui também -->
+                    <p class="card-text fst-italic"
+                        th:utext="${#strings.replace(app.oracaoSemente, '\n', '&lt;br/&gt;')}"></p>
                 </div>
             </div>
         </div>
@@ -385,11 +476,63 @@
         </div>
     </footer>
 
+    <!-- MODAL DE CONFIRMAÇÃO DE EXCLUSÃO (UX/UI: Segundo Alerta) -->
+    <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <!-- ALTERAÇÃO: Usando a nova classe modal-header-confirmation para o estilo Lilás -->
+                <div class="modal-header modal-header-confirmation text-white">
+                    <h5 class="modal-title" id="deleteConfirmationModalLabel"><i
+                            class="fas fa-exclamation-triangle me-2 text-warning"></i> Confirmação Necessária</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <p class="mb-3">Você tem certeza que deseja excluir este registro?</p>
+                    <p class="text-danger small">Esta ação não pode ser desfeita e irá afetar seu Mapa de Crescimento.
+                    </p>
+
+                    <!-- Formulário real de exclusão que será preenchido pelo JS -->
+                    <form id="deleteForm" method="post" action="/delete/0">
+                        <input type="hidden" name="_method" value="delete" />
+                        <div class="d-grid gap-2">
+                            <!-- Botão de exclusão se mantém vermelho para reforçar o perigo -->
+                            <button type="submit" class="btn btn-danger fw-bold">Sim, Excluir Definitivamente</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
 
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        // Lógica para injetar o ID do registro no Modal de Confirmação
+        document.addEventListener('DOMContentLoaded', function () {
+            const deleteConfirmationModal = document.getElementById('deleteConfirmationModal');
+            const deleteForm = document.getElementById('deleteForm');
+
+            // Certifica-se de que o Modal de Confirmação lida com cliques de qualquer botão de lixeira
+            deleteConfirmationModal.addEventListener('show.bs.modal', function (event) {
+                // Pega o botão que acionou o modal
+                const button = event.relatedTarget;
+
+                // Pega o ID do registro
+                const appId = button.getAttribute('data-app-id');
+
+                // Atualiza a URL do formulário de exclusão
+                // O action real vai para o /delete/{id} no controlador Spring
+                deleteForm.action = /*[[@{/delete/}]]*/ '/delete/' + appId;
+            });
+        });
+        /*]]>*/
+    </script>
 </body>
 
 </html>
